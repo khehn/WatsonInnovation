@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "232268602988",
+    "firebase_url": "https://watsoninnovation-3890f.firebaseio.com",
+    "project_id": "watsoninnovation-3890f",
+    "storage_bucket": "watsoninnovation-3890f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232268602988:android:8b1d5659dc830a79",
+        "android_client_info": {
+          "package_name": "com.example.kevin.watsoninnovation"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "232268602988-0a72epa27lemq5vdnh4mfh0p3fld265d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kevin.watsoninnovation",
+            "certificate_hash": "11edc6348d51aafbbeae32fa2e6e71527936199e"
+          }
+        },
+        {
+          "client_id": "232268602988-hsivapjii4qr3dc2tgn3qm5alt34882j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0SKkEGStbJnSITi9Y4BhezoP9JxDm4M8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "232268602988-hsivapjii4qr3dc2tgn3qm5alt34882j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

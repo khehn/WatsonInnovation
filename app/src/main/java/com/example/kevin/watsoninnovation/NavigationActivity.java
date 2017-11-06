@@ -2,11 +2,9 @@ package com.example.kevin.watsoninnovation;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.SearchManager;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,6 +28,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.ibm.watson.developer_cloud.android.library.camera.CameraHelper;
 import com.ibm.watson.developer_cloud.conversation.v1.ConversationService;
 import com.ibm.watson.developer_cloud.conversation.v1.model.MessageRequest;
@@ -55,6 +56,10 @@ import java.util.List;
  */
 public class NavigationActivity extends AppCompatActivity {
 
+    //Firebase objects
+    private FirebaseAnalytics mFirebaseAnalytics;
+    private FirebaseAuth mAuth;
+
     //Declare visual elements
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -71,6 +76,24 @@ public class NavigationActivity extends AppCompatActivity {
     private CameraHelper helper;
 
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        updateUI(currentUser);
+    }
+
+    public void updateUI(FirebaseUser user){
+        if(user==null) {
+            Intent intent = new Intent(this, SignInActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+
     /**
      * Executed when it Activity is created.
      * Sets up the navigation drawer.
@@ -81,6 +104,11 @@ public class NavigationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
+
+        //Set up firebase
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        mAuth = FirebaseAuth.getInstance();
+
 
         mTitle = mDrawerTitle = getTitle();
         mNavElements = getResources().getStringArray(R.array.navigation_elements);
@@ -139,7 +167,7 @@ public class NavigationActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
+        menu.findItem(R.id.action_sign_out).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -152,16 +180,12 @@ public class NavigationActivity extends AppCompatActivity {
         }
         // Handle action buttons
         switch (item.getItemId()) {
-            case R.id.action_websearch:
-                // create intent to perform web search for this planet
-                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-                intent.putExtra(SearchManager.QUERY, getSupportActionBar().getTitle());
-                // catch event that there's no activity to handle intent
-                if (intent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
-                }
+            case R.id.action_sign_out:
+                FirebaseAuth.getInstance().signOut();
+                Toast.makeText(this, R.string.signed_out, Toast.LENGTH_LONG).show();
+                // Check if user is signed in (non-null) and update UI accordingly.
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                updateUI(currentUser);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -451,16 +475,30 @@ public class NavigationActivity extends AppCompatActivity {
             String navElement = getResources().getStringArray(R.array.navigation_elements)[i];
             //Set the string as title of the activity.
             getActivity().setTitle(navElement);
-
-
-
-
             return rootView;
         }
-
-
-
-
     }
+    public static class FaceRecognitionFragment extends Fragment {
+        public static final String ARG_NAV_NUM = "element_number";
+
+        public FaceRecognitionFragment() {
+            // Empty constructor required for fragment subclasses
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            // Get the number that corresponds to the entry in the menu the user has selected.
+            int i = getArguments().getInt(ARG_NAV_NUM);
+            View rootView = inflater.inflate(R.layout.fragment_navigation_visual_rec, container, false);
+
+            //Get the string representing the entry in the menu.
+            String navElement = getResources().getStringArray(R.array.navigation_elements)[i];
+            //Set the string as title of the activity.
+            getActivity().setTitle(navElement);
+            return rootView;
+        }
+    }
+
 }
 
