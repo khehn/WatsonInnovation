@@ -9,10 +9,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,44 +41,56 @@ import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageClassific
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassification;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
 
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represents the main activity of this app.
+ * Incorporates a navigationdrawer to navigate between the different functionalities.
+ * These functionalities are realized as fragments.
+ */
 public class NavigationActivity extends AppCompatActivity {
 
+    //Declare visual elements
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
 
+    // Generally needed variables
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
-    private String[] mPlanetTitles;
+    private String[] mNavElements;
+    private File f;
 
+    //Variables needed for IBM Watson
     private VisualRecognition vrClient;
     private CameraHelper helper;
-    File f;
 
 
+    /**
+     * Executed when it Activity is created.
+     * Sets up the navigation drawer.
+     * Additionally it initializes stuff needed for IBM Watson methods
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
 
         mTitle = mDrawerTitle = getTitle();
-        mPlanetTitles = getResources().getStringArray(R.array.navigation_elements);
+        mNavElements = getResources().getStringArray(R.array.navigation_elements);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
 
         // set up the drawer's list view with items and click listener
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.drawer_list_item, mPlanetTitles));
+                R.layout.drawer_list_item, mNavElements));
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
 
@@ -194,7 +206,7 @@ public class NavigationActivity extends AppCompatActivity {
 
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(position, true);
-        setTitle(mPlanetTitles[position]);
+        setTitle(mNavElements[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
@@ -223,6 +235,12 @@ public class NavigationActivity extends AppCompatActivity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
+    /**
+     * Callback method for when the user has taken a picture using the camera
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode,
                                     int resultCode,
@@ -230,6 +248,10 @@ public class NavigationActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == CameraHelper.REQUEST_IMAGE_CAPTURE) {
+            /*
+            Is is necessary to resize the picture, since otherwise the pictures
+            take to long to send and Watson gives an error message
+             */
             final Bitmap photo = helper.getBitmap(resultCode);
             final File photoFile = helper.getFile(resultCode);
 
@@ -259,7 +281,7 @@ public class NavigationActivity extends AppCompatActivity {
             Log.d("File",f.toString());
 
 
-
+            //Call the Watson API
             AsyncTask.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -271,7 +293,7 @@ public class NavigationActivity extends AppCompatActivity {
                                     .build()
                     ).execute();
 
-
+                    //Get the results
                     ImageClassification classification =
                             response.getImages().get(0);
 
@@ -279,12 +301,12 @@ public class NavigationActivity extends AppCompatActivity {
                             classification.getClassifiers().get(0);
                     final StringBuffer output = new StringBuffer();
                     for(VisualClassifier.VisualClass object: classifier.getClasses()) {
-                        if(object.getScore() > 0.7f)
+                        if(object.getScore() > 0.4f)
                             output.append("<")
                                     .append(object.getName())
                                     .append("> \n");
                     }
-
+                    //Update UI
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -299,6 +321,14 @@ public class NavigationActivity extends AppCompatActivity {
             });
         }
     }
+
+    /**
+     * Method used to resize a bitmap
+     * @param bm
+     * @param newWidth
+     * @param newHeight
+     * @return
+     */
     public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
         int width = bm.getWidth();
         int height = bm.getHeight();
@@ -315,33 +345,10 @@ public class NavigationActivity extends AppCompatActivity {
         bm.recycle();
         return resizedBitmap;
     }
-    public static File scaleDown(File realImage, float maxImageSize,
-                                   boolean filter) throws IOException {
-        String filePath = realImage.getPath();
-        Bitmap bitmap = BitmapFactory.decodeFile(filePath);
 
-        float ratio = Math.min(
-                (float) maxImageSize / bitmap.getWidth(),
-                (float) maxImageSize / bitmap.getHeight());
-        int width = Math.round((float) ratio * bitmap.getWidth());
-        int height = Math.round((float) ratio * bitmap.getHeight());
-
-        Bitmap newBitmap = Bitmap.createScaledBitmap(bitmap, width,
-                height, filter);
-
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
-        byte[] bitmapdata = bos.toByteArray();
-
-
-        FileOutputStream fos = new FileOutputStream(realImage);
-        fos.write(bitmapdata);
-        fos.flush();
-        fos.close();
-        return realImage;
-    }
-
+    /**
+     * Fragment for the Chatbot
+     */
     public static class ChatBotFragment extends Fragment {
         public static final String ARG_NAV_NUM = "element_number";
         private ArrayAdapter mAdapter;
@@ -428,8 +435,6 @@ public class NavigationActivity extends AppCompatActivity {
 
     public static class VisualRecognitionFragment extends Fragment {
         public static final String ARG_NAV_NUM = "element_number";
-        static final int REQUEST_IMAGE_CAPTURE = 1;
-
 
         public VisualRecognitionFragment() {
             // Empty constructor required for fragment subclasses
