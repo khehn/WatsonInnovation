@@ -3,14 +3,18 @@ package com.example.kevin.watsoninnovation;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.os.AsyncTask;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,163 +25,323 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ibm.watson.developer_cloud.android.library.camera.CameraHelper;
 import com.ibm.watson.developer_cloud.conversation.v1.ConversationService;
 import com.ibm.watson.developer_cloud.conversation.v1.model.MessageRequest;
 import com.ibm.watson.developer_cloud.conversation.v1.model.MessageResponse;
 import com.ibm.watson.developer_cloud.http.ServiceCallback;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ClassifyImagesOptions;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageClassification;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassification;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
 
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NavigationActivity extends AppCompatActivity {
 
-        private DrawerLayout mDrawerLayout;
-        private ListView mDrawerList;
-        private ActionBarDrawerToggle mDrawerToggle;
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private ActionBarDrawerToggle mDrawerToggle;
 
-        private CharSequence mDrawerTitle;
-        private CharSequence mTitle;
-        private String[] mPlanetTitles;
+    private CharSequence mDrawerTitle;
+    private CharSequence mTitle;
+    private String[] mPlanetTitles;
 
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_navigation);
-
-            mTitle = mDrawerTitle = getTitle();
-            mPlanetTitles = getResources().getStringArray(R.array.navigation_elements);
-            mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-            mDrawerList = (ListView) findViewById(R.id.left_drawer);
+    private VisualRecognition vrClient;
+    private CameraHelper helper;
+    File f;
 
 
-            // set up the drawer's list view with items and click listener
-            mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                    R.layout.drawer_list_item, mPlanetTitles));
-            mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_navigation);
+
+        mTitle = mDrawerTitle = getTitle();
+        mPlanetTitles = getResources().getStringArray(R.array.navigation_elements);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
 
-            mDrawerToggle = new ActionBarDrawerToggle(
-                    this,                  /* host Activity */
-                    mDrawerLayout,         /* DrawerLayout object */
-                    R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
-                    R.string.drawer_open,  /* "open drawer" description for accessibility */
-                    R.string.drawer_close  /* "close drawer" description for accessibility */
-            ) {
-                public void onDrawerClosed(View view) {
-                    getSupportActionBar().setTitle(mTitle);
-                    invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                }
+        // set up the drawer's list view with items and click listener
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+                R.layout.drawer_list_item, mPlanetTitles));
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-                public void onDrawerOpened(View drawerView) {
-                    getSupportActionBar().setTitle(mDrawerTitle);
-                    invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                }
-            };
-            mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-            if (savedInstanceState == null) {
-                selectItem(0);
+        mDrawerToggle = new ActionBarDrawerToggle(
+                this,                  /* host Activity */
+                mDrawerLayout,         /* DrawerLayout object */
+                R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
+                R.string.drawer_open,  /* "open drawer" description for accessibility */
+                R.string.drawer_close  /* "close drawer" description for accessibility */
+        ) {
+            public void onDrawerClosed(View view) {
+                getSupportActionBar().setTitle(mTitle);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
+
+            public void onDrawerOpened(View drawerView) {
+                getSupportActionBar().setTitle(mDrawerTitle);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+        if (savedInstanceState == null) {
+            selectItem(0);
         }
 
-        @Override
-        public boolean onCreateOptionsMenu(Menu menu) {
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate(R.menu.main, menu);
-            return super.onCreateOptionsMenu(menu);
-        }
+        // Initialize Visual Recognition client
+        vrClient = new VisualRecognition(
+                VisualRecognition.VERSION_DATE_2016_05_20,
+                getString(R.string.api_key_vis_rec)
+        );
 
-        /* Called whenever we call invalidateOptionsMenu() */
-        @Override
-        public boolean onPrepareOptionsMenu(Menu menu) {
-            // If the nav drawer is open, hide action items related to the content view
-            boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-            menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
-            return super.onPrepareOptionsMenu(menu);
-        }
+        // Initialize camera helper
+        helper = new CameraHelper(this);
+    }
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            // The action bar home/up action should open or close the drawer.
-            // ActionBarDrawerToggle will take care of this.
-            if (mDrawerToggle.onOptionsItemSelected(item)) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    /* Called whenever we call invalidateOptionsMenu() */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // If the nav drawer is open, hide action items related to the content view
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // The action bar home/up action should open or close the drawer.
+        // ActionBarDrawerToggle will take care of this.
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        // Handle action buttons
+        switch (item.getItemId()) {
+            case R.id.action_websearch:
+                // create intent to perform web search for this planet
+                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                intent.putExtra(SearchManager.QUERY, getSupportActionBar().getTitle());
+                // catch event that there's no activity to handle intent
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
+                }
                 return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void takePicture(View view) {
+        helper.dispatchTakePictureIntent();
+    }
+
+
+
+    /* The click listner for ListView in the navigation drawer */
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }
+
+    private void selectItem(int position) {
+        // update the main content by replacing fragments
+        Fragment fragment;
+        switch (position) {
+            case 0:
+                fragment = new ChatBotFragment();
+                break;
+            case 1:
+                fragment = new VisualRecognitionFragment();
+                break;
+            default:
+                fragment = new ChatBotFragment();
+                break;
+        }
+
+        Bundle args = new Bundle();
+        args.putInt(ChatBotFragment.ARG_NAV_NUM, position);
+        fragment.setArguments(args);
+
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+
+        // update selected item and title, then close the drawer
+        mDrawerList.setItemChecked(position, true);
+        setTitle(mPlanetTitles[position]);
+        mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        mTitle = title;
+        getSupportActionBar().setTitle(mTitle);
+    }
+
+    /**
+     * When using the ActionBarDrawerToggle, you must call it during
+     * onPostCreate() and onConfigurationChanged()...
+     */
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggls
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode,
+                                    int resultCode,
+                                    Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == CameraHelper.REQUEST_IMAGE_CAPTURE) {
+            final Bitmap photo = helper.getBitmap(resultCode);
+            final File photoFile = helper.getFile(resultCode);
+
+            Log.d("File",photoFile.toString());
+            Bitmap b = getResizedBitmap(photo,1000,1000);
+
+            ImageView preview = findViewById(R.id.preview);
+            preview.setImageBitmap(b);
+
+            f = new File(getApplicationContext().getCacheDir(), "temp.jpg");
+            try {
+                f.createNewFile();
+                //Convert bitmap to byte array
+                Bitmap bitmap = b;
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                b.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                byte[] bitmapdata = bos.toByteArray();
+
+                //write the bytes in file
+                FileOutputStream fos = new FileOutputStream(f);
+                fos.write(bitmapdata);
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                Log.d("Error", "Error");
             }
-            // Handle action buttons
-            switch(item.getItemId()) {
-                case R.id.action_websearch:
-                    // create intent to perform web search for this planet
-                    Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-                    intent.putExtra(SearchManager.QUERY, getSupportActionBar().getTitle());
-                    // catch event that there's no activity to handle intent
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
+            Log.d("File",f.toString());
+
+
+
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    VisualClassification response =
+                            null;
+                    response = vrClient.classify(
+                            new ClassifyImagesOptions.Builder()
+                                    .images(f)
+                                    .build()
+                    ).execute();
+
+
+                    ImageClassification classification =
+                            response.getImages().get(0);
+
+                    VisualClassifier classifier =
+                            classification.getClassifiers().get(0);
+                    final StringBuffer output = new StringBuffer();
+                    for(VisualClassifier.VisualClass object: classifier.getClasses()) {
+                        if(object.getScore() > 0.7f)
+                            output.append("<")
+                                    .append(object.getName())
+                                    .append("> \n");
                     }
-                    return true;
-                default:
-                    return super.onOptionsItemSelected(item);
-            }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            TextView detectedObjects =
+                                    findViewById(R.id.detected_objects);
+                            detectedObjects.setText(output);
+                        }
+                    });
+
+                }
+
+            });
         }
+    }
+    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight);
 
-        /* The click listner for ListView in the navigation drawer */
-        private class DrawerItemClickListener implements ListView.OnItemClickListener {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItem(position);
-            }
-        }
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(
+                bm, 0, 0, width, height, matrix, false);
+        bm.recycle();
+        return resizedBitmap;
+    }
+    public static File scaleDown(File realImage, float maxImageSize,
+                                   boolean filter) throws IOException {
+        String filePath = realImage.getPath();
+        Bitmap bitmap = BitmapFactory.decodeFile(filePath);
 
-        private void selectItem(int position) {
-            // update the main content by replacing fragments
-            Fragment fragment;
-            switch(position){
-                case 0: fragment = new ChatBotFragment(); break;
-                case 1: fragment = new VisualRecognitionFragment(); break;
-                default: fragment = new ChatBotFragment(); break;
-            }
+        float ratio = Math.min(
+                (float) maxImageSize / bitmap.getWidth(),
+                (float) maxImageSize / bitmap.getHeight());
+        int width = Math.round((float) ratio * bitmap.getWidth());
+        int height = Math.round((float) ratio * bitmap.getHeight());
 
-            Bundle args = new Bundle();
-            args.putInt(ChatBotFragment.ARG_NAV_NUM, position);
-            fragment.setArguments(args);
+        Bitmap newBitmap = Bitmap.createScaledBitmap(bitmap, width,
+                height, filter);
 
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
-            // update selected item and title, then close the drawer
-            mDrawerList.setItemChecked(position, true);
-            setTitle(mPlanetTitles[position]);
-            mDrawerLayout.closeDrawer(mDrawerList);
-        }
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+        byte[] bitmapdata = bos.toByteArray();
 
-        @Override
-        public void setTitle(CharSequence title) {
-            mTitle = title;
-            getSupportActionBar().setTitle(mTitle);
-        }
 
-        /**
-         * When using the ActionBarDrawerToggle, you must call it during
-         * onPostCreate() and onConfigurationChanged()...
-         */
+        FileOutputStream fos = new FileOutputStream(realImage);
+        fos.write(bitmapdata);
+        fos.flush();
+        fos.close();
+        return realImage;
+    }
 
-        @Override
-        protected void onPostCreate(Bundle savedInstanceState) {
-            super.onPostCreate(savedInstanceState);
-            // Sync the toggle state after onRestoreInstanceState has occurred.
-            mDrawerToggle.syncState();
-        }
-
-        @Override
-        public void onConfigurationChanged(Configuration newConfig) {
-            super.onConfigurationChanged(newConfig);
-            // Pass any configuration change to the drawer toggls
-            mDrawerToggle.onConfigurationChanged(newConfig);
-        }
     public static class ChatBotFragment extends Fragment {
         public static final String ARG_NAV_NUM = "element_number";
         private ArrayAdapter mAdapter;
@@ -204,16 +368,13 @@ public class NavigationActivity extends AppCompatActivity {
             getActivity().setTitle(navElement);
 
 
-
-
-
             myConversationService =
                     new ConversationService(
                             "2017-05-26",
                             getString(R.string.username_dr_watson_1),
                             getString(R.string.password_dr_watson_1)
                     );
-            conversation = (ListView)rootView.findViewById(R.id.messagesContainer);
+            conversation = (ListView) rootView.findViewById(R.id.messagesContainer);
             userInput = (EditText) rootView.findViewById(R.id.messageEdit);
             sendButton = rootView.findViewById(R.id.chatSendButton);
 
@@ -254,7 +415,8 @@ public class NavigationActivity extends AppCompatActivity {
                                 }
 
                                 @Override
-                                public void onFailure(Exception e) {}
+                                public void onFailure(Exception e) {
+                                }
                             });
                 }
             });
@@ -266,6 +428,7 @@ public class NavigationActivity extends AppCompatActivity {
 
     public static class VisualRecognitionFragment extends Fragment {
         public static final String ARG_NAV_NUM = "element_number";
+        static final int REQUEST_IMAGE_CAPTURE = 1;
 
 
         public VisualRecognitionFragment() {
@@ -277,17 +440,22 @@ public class NavigationActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             // Get the number that corresponds to the entry in the menu the user has selected.
             int i = getArguments().getInt(ARG_NAV_NUM);
-            View rootView = inflater.inflate(R.layout.fragment_navigation_profil, container, false);
+            View rootView = inflater.inflate(R.layout.fragment_navigation_visual_rec, container, false);
 
             //Get the string representing the entry in the menu.
             String navElement = getResources().getStringArray(R.array.navigation_elements)[i];
             //Set the string as title of the activity.
             getActivity().setTitle(navElement);
 
-            Context appContext = getActivity().getApplicationContext();
+
+
 
             return rootView;
         }
+
+
+
+
     }
 }
 

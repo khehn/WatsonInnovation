@@ -18,6 +18,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="action_websearch">Websearch</string>
+    <string name="api_key_vis_rec">fafa3063112aaecfc4f25d074b90b48b67f18236</string>
 
 
 </resources>
