@@ -1,7 +1,23 @@
 <resources>
     <string name="app_name">WatsonInnovation</string>
+    <!-->Chatbot Credentials</!-->
     <string name="username_dr_watson_1">f540210c-275f-4677-98bc-2749bfe98726</string>
     <string name="password_dr_watson_1">t4OcqR0A0tXk</string>
     <string name="workspace_dr_watson_1">befe5c2d-3bdd-4388-a9c1-3d20388cf406</string>
+
+
+    <string-array name="navigation_elements">
+        <item>chatbot</item>
+        <item>image recognition</item>
+    </string-array>
     <string name="typeMessage">Please enter a message</string>
+    <string name="drawer_open">Open Drawer</string>
+    <string name="drawer_close">Close Drawer</string>
+    <string name="app_not_available">App not available</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="action_websearch">Websearch</string>
+
+
 </resources>
