@@ -28,6 +28,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.login.LoginManager;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -89,6 +90,7 @@ public class NavigationActivity extends AppCompatActivity {
         if(user==null) {
             Intent intent = new Intent(this, SignInActivity.class);
             startActivity(intent);
+            LoginManager.getInstance().logOut();
             finish();
         }
     }

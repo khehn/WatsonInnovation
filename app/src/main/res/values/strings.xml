@@ -5,6 +5,8 @@
     <string name="password_dr_watson_1">t4OcqR0A0tXk</string>
     <string name="workspace_dr_watson_1">befe5c2d-3bdd-4388-a9c1-3d20388cf406</string>
 
+    <string name="facebook_app_id">173128223270728</string>
+    <string name="fb_login_protocol_scheme">fb173128223270728</string>
 
     <string-array name="navigation_elements">
         <item>chatbot</item>
