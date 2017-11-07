@@ -13,6 +13,8 @@ import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
@@ -33,6 +35,9 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
     private FirebaseAuth mAuth;
@@ -71,11 +76,42 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         // Initialize Facebook Login button
         mCallbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = findViewById(R.id.login_button);
-        loginButton.setReadPermissions("email", "public_profile");
+        loginButton.setReadPermissions("public_profile", "email", "user_birthday");
         loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d("Facebook Login", "facebook:onSuccess:" + loginResult);
+                GraphRequest request = GraphRequest.newMeRequest(
+                        loginResult.getAccessToken(),
+                        new GraphRequest.GraphJSONObjectCallback() {
+                            @Override
+                            public void onCompleted(JSONObject object, GraphResponse response) {
+                                Log.v("LoginActivity", response.toString());
+
+                                // Application code
+                                String email = "";
+                                String birthday = "";
+                                String name = "";
+                                String gender = "";
+                                try {
+                                    email = object.getString("email");
+                                    birthday = object.getString("birthday"); // 01/31/1980 format
+                                    name = object.getString("name");
+                                    gender = object.getString("gender");
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                Log.d("name",name);
+                                Log.d("email",email);
+                                Log.d("bday",birthday);
+                                Log.d("gender",gender);
+
+                            }
+                        });
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name,email,gender,birthday");
+                request.setParameters(parameters);
+                request.executeAsync();
                 handleFacebookAccessToken(loginResult.getAccessToken());
             }
 
