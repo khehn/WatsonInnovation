@@ -1,8 +1,12 @@
 package com.example.kevin.watsoninnovation;
 
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Point;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,11 +16,18 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -35,6 +46,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.FirebaseAuth;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarkerClickListener,OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -51,6 +64,12 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     Marker rijksMuseumMarker;
     Toolbar sliderToolbar;
     SlidingUpPanelLayout sliding_layout;
+    Toolbar toolbar_navigation;
+    private GridView gridView;
+    static final View[] containers = new View[1];
+    //Firebase objects
+    private FirebaseAnalytics mFirebaseAnalytics;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,12 +79,14 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
         mapView = mapFrag.getView();
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         goToCurrentChallengeButton = findViewById(R.id.goToCurrentChallengeButton);
         openDrawerButton = findViewById(R.id.menuDrawerButton);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         sliderToolbar = findViewById(R.id.my_toolbar);
         sliding_layout = findViewById(R.id.sliding_layout);
+        toolbar_navigation= (Toolbar) findViewById(R.id.toolbar_navigation);
 
         openDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,7 +101,11 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
 
             }
         });
+        toolbar_navigation.setTitle("Settings");
         sliding_layout.setEnabled(false);
+
+
+
 
     }
 
