@@ -171,7 +171,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             Log.d("SUCCESS","SUCCESS");
-            //Intent intent = new Intent(this, NavigationActivity.class);
+            //Intent intent = new Intent(this, MapsActivity.class);
             //startActivity(intent);
             firebaseAuthWithGoogle(account);
         } else {
@@ -239,7 +239,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         if(user==null)
             return;
 
-        Intent intent = new Intent(this, NavigationActivity.class);
+        Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
     }
 

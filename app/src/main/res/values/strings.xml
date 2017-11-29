@@ -24,6 +24,7 @@
     <string name="api_key_vis_rec">fafa3063112aaecfc4f25d074b90b48b67f18236</string>
     <string name="signed_in_fmt">Signed In</string>
     <string name="signed_out">Signed out</string>
+    <string name="title_activity_maps">Map</string>
 
 
 </resources>
