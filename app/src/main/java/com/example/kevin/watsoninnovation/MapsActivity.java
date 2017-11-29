@@ -3,24 +3,22 @@ package com.example.kevin.watsoninnovation;
 
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -30,7 +28,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -38,8 +35,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarkerClickListener,OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     GoogleMap mGoogleMap;
     SupportMapFragment mapFrag;
@@ -50,10 +48,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Button goToCurrentChallengeButton;
     ImageButton openDrawerButton;
     DrawerLayout mDrawerLayout;
+    Marker rijksMuseumMarker;
+    Toolbar sliderToolbar;
+    SlidingUpPanelLayout sliding_layout;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
@@ -63,7 +63,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         goToCurrentChallengeButton = findViewById(R.id.goToCurrentChallengeButton);
         openDrawerButton = findViewById(R.id.menuDrawerButton);
-        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        sliderToolbar = findViewById(R.id.my_toolbar);
+        sliding_layout = findViewById(R.id.sliding_layout);
 
         openDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,6 +80,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+        sliding_layout.setEnabled(false);
 
     }
 
@@ -92,9 +95,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap)
-    {
-        mGoogleMap=googleMap;
+    public void onMapReady(GoogleMap googleMap) {
+        mGoogleMap = googleMap;
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
 
@@ -111,8 +113,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //Request Location Permission
                 checkLocationPermission();
             }
-        }
-        else {
+        } else {
             buildGoogleApiClient();
             mGoogleMap.setMyLocationEnabled(true);
         }
@@ -124,7 +125,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-                            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()),16));
+                            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 13));
                         }
                     }
                 });
@@ -141,6 +142,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
             layoutParams.setMargins(0, 0, 30, 30);
         }
+        googleMap.setOnMarkerClickListener(this);
+        rijksMuseumMarker = mGoogleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(52.3599976, 4.8852188))
+                .title("Rijksmuseum"));
+
+        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                sliding_layout.setEnabled(false);
+                sliderToolbar.setTitle("");
+            }
+        });
+        mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
 
 
     }
@@ -168,14 +182,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onConnectionSuspended(int i) {}
+    public void onConnectionSuspended(int i) {
+    }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {}
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+    }
 
     @Override
-    public void onLocationChanged(Location location)
-    {
+    public void onLocationChanged(Location location) {
         mLastLocation = location;
 
         //Place current location marker
@@ -192,6 +207,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -212,7 +228,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 //Prompt the user once explanation has been shown
                                 ActivityCompat.requestPermissions(MapsActivity.this,
                                         new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION );
+                                        MY_PERMISSIONS_REQUEST_LOCATION);
                             }
                         })
                         .create()
@@ -223,7 +239,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
                         new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION );
+                        MY_PERMISSIONS_REQUEST_LOCATION);
             }
         }
     }
@@ -263,5 +279,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    @Override
+    public boolean onMarkerClick(final Marker marker) {
+
+        if (marker.equals(rijksMuseumMarker)) {
+            sliding_layout.setEnabled(true);
+            Toast.makeText(getApplicationContext(), "Rijksmuseum clicked", Toast.LENGTH_SHORT).show();
+            sliderToolbar.setTitle("Rijksmuseum");
+        }
+        return false;
+    }
 
 }
