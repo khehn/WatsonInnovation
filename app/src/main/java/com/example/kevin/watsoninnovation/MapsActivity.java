@@ -4,10 +4,12 @@ package com.example.kevin.watsoninnovation;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -57,10 +59,12 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
+    LatLng mSelectedDestination;
     View mapView;
     Button goToCurrentChallengeButton;
     ImageButton openDrawerButton;
     DrawerLayout mDrawerLayout;
+    Button start_navigation_btn;
     Marker rijksMuseumMarker;
     Toolbar sliderToolbar;
     SlidingUpPanelLayout sliding_layout;
@@ -83,10 +87,12 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
 
         goToCurrentChallengeButton = findViewById(R.id.goToCurrentChallengeButton);
         openDrawerButton = findViewById(R.id.menuDrawerButton);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout =  findViewById(R.id.drawer_layout);
         sliderToolbar = findViewById(R.id.my_toolbar);
         sliding_layout = findViewById(R.id.sliding_layout);
-        toolbar_navigation= (Toolbar) findViewById(R.id.toolbar_navigation);
+        toolbar_navigation =  findViewById(R.id.toolbar_navigation);
+        start_navigation_btn = findViewById(R.id.start_navigation_btn);
+
 
         openDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,6 +105,18 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             public void onClick(View view) {
                 Toast.makeText(getApplicationContext(), "Go to challenge", Toast.LENGTH_SHORT).show();
 
+            }
+        });
+        start_navigation_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mSelectedDestination!=null) {
+
+                    Uri gmmIntentUri = Uri.parse("google.navigation:q="+mSelectedDestination.latitude+","+mSelectedDestination.longitude+"&mode=w");
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    mapIntent.setPackage("com.google.android.apps.maps");
+                    startActivity(mapIntent);
+                }
             }
         });
         toolbar_navigation.setTitle("Settings");
@@ -175,6 +193,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
+                mSelectedDestination = null;
                 sliding_layout.setEnabled(false);
                 sliderToolbar.setTitle("");
             }
@@ -309,6 +328,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
 
         if (marker.equals(rijksMuseumMarker)) {
             sliding_layout.setEnabled(true);
+            mSelectedDestination = new LatLng(52.3599976, 4.8852188);
             Toast.makeText(getApplicationContext(), "Rijksmuseum clicked", Toast.LENGTH_SHORT).show();
             sliderToolbar.setTitle("Rijksmuseum");
         }
