@@ -1,15 +1,24 @@
 package com.example.kevin.watsoninnovation;
 
+
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -38,6 +47,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     View mapView;
+    Button goToCurrentChallengeButton;
+    ImageButton openDrawerButton;
+    DrawerLayout mDrawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -48,6 +60,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
         mapView = mapFrag.getView();
+
+        goToCurrentChallengeButton = findViewById(R.id.goToCurrentChallengeButton);
+        openDrawerButton = findViewById(R.id.menuDrawerButton);
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+
+        openDrawerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawerLayout.openDrawer(Gravity.LEFT);
+            }
+        });
+        goToCurrentChallengeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "Go to challenge", Toast.LENGTH_SHORT).show();
+
+            }
+        });
 
     }
 
