@@ -45,6 +45,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     GoogleApiClient mGoogleApiClient;
     LoginButton loginButton;
     CallbackManager mCallbackManager;
+    boolean isFirstLogin = false;
 
     private static final int RC_SIGN_IN = 1;
     @Override
@@ -236,11 +237,17 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 });
     }
     public void updateUI(FirebaseUser user){
-        if(user==null)
+        if(user==null) {
+            isFirstLogin = true;
             return;
-
-        Intent intent = new Intent(this, MapsActivity.class);
-        startActivity(intent);
+        }
+        if(isFirstLogin){
+            Intent intent = new Intent(this, SwipeActivity.class);
+            startActivity(intent);
+        }else {
+            Intent intent = new Intent(this, MapsActivity.class);
+            startActivity(intent);
+        }
     }
 
 }

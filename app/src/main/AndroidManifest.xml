@@ -69,7 +69,10 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
-        <activity android:name=".Quest"></activity>
+        <activity android:name=".Quest" />
+        <activity android:name=".SwipeActivity">
+
+        </activity>
     </application>
 
 </manifest>

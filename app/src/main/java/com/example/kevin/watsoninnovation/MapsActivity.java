@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.facebook.login.LoginManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -51,6 +52,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,6 +60,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,12 +90,14 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     static final View[] containers = new View[1];
     //Firebase objects
     private FirebaseAnalytics mFirebaseAnalytics;
+    private FirebaseAuth mAuth;
     static int currentQuest = -1;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("/project/quests/");
     TextView text_view_description_content;
     TextView text_view_places_content;
     TextView text_view_teaser_content;
+    TextView navigation_drawer_logout;
 
     Map<String,Object> questsHashMap;
     Map<String,Marker> gMapsMarkerMap;
@@ -109,6 +114,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         mapFrag.getMapAsync(this);
         mapView = mapFrag.getView();
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        mAuth = FirebaseAuth.getInstance();
 
         goToCurrentChallengeButton = findViewById(R.id.goToCurrentChallengeButton);
         openDrawerButton = findViewById(R.id.menuDrawerButton);
@@ -121,6 +127,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         text_view_description_content = findViewById(R.id.text_view_description_content);
         text_view_places_content = findViewById(R.id.text_view_places_content);
         text_view_teaser_content = findViewById(R.id.text_view_teaser_content);
+        navigation_drawer_logout = findViewById(R.id.navigation_drawer_logout);
 
         dbQuestMap = new HashMap<>();
 
@@ -187,6 +194,16 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
                         //handle databaseError
                     }
                 });
+        navigation_drawer_logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseAuth.getInstance().signOut();
+                Toast.makeText(getApplicationContext(), R.string.signed_out, Toast.LENGTH_LONG).show();
+                // Check if user is signed in (non-null) and update UI accordingly.
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                updateUI(currentUser);
+            }
+        });
 
         gMapsMarkerMap = new HashMap<String,Marker>();
     }
@@ -474,6 +491,21 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         if(mGoogleMap!=null) {
             clearMap();
             addMarker(questsHashMap);
+        }
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        updateUI(currentUser);
+    }
+    public void updateUI(FirebaseUser user){
+        if(user==null) {
+            Intent intent = new Intent(this, SignInActivity.class);
+            startActivity(intent);
+            LoginManager.getInstance().logOut();
+            finish();
         }
     }
 }
