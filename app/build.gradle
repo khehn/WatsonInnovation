@@ -27,6 +27,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-crash:11.0.4'
     implementation 'com.google.android.gms:play-services-maps:11.0.4'
     implementation 'com.google.android.gms:play-services-location:11.0.4'
+    implementation 'com.google.firebase:firebase-database:11.0.4'
     compile 'com.google.firebase:firebase-auth:11.0.4'
     compile 'com.google.android.gms:play-services-auth:11.0.4'
 
@@ -44,6 +45,8 @@ dependencies {
     implementation 'com.ibm.watson.developer_cloud:visual-recognition:3.9.1'
     implementation 'com.ibm.watson.developer_cloud:android-sdk:0.4.2'
 }
+
+
 
 
 

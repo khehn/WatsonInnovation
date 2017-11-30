@@ -18,6 +18,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
@@ -50,7 +51,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static android.provider.AlarmClock.EXTRA_MESSAGE;
 
 public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarkerClickListener,OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -62,10 +73,13 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     LatLng mSelectedDestination;
     View mapView;
     Button goToCurrentChallengeButton;
+    Button start_quest_btn;
     ImageButton openDrawerButton;
     DrawerLayout mDrawerLayout;
     Button start_navigation_btn;
     Marker rijksMuseumMarker;
+    Marker VUMarker;
+    Marker Uilenstede;
     Toolbar sliderToolbar;
     SlidingUpPanelLayout sliding_layout;
     Toolbar toolbar_navigation;
@@ -73,12 +87,23 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     static final View[] containers = new View[1];
     //Firebase objects
     private FirebaseAnalytics mFirebaseAnalytics;
+    static int currentQuest = -1;
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference("/project/quests/");
+    TextView text_view_description_content;
+    TextView text_view_places_content;
+    TextView text_view_teaser_content;
 
+    Map<String,Object> questsHashMap;
+    Map<String,Marker> gMapsMarkerMap;
+    Map<String,DBQuest> dbQuestMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        myRef = database.getReference("/project/quests/");
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
@@ -92,7 +117,12 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         sliding_layout = findViewById(R.id.sliding_layout);
         toolbar_navigation =  findViewById(R.id.toolbar_navigation);
         start_navigation_btn = findViewById(R.id.start_navigation_btn);
+        start_quest_btn = findViewById(R.id.start_quest_btn);
+        text_view_description_content = findViewById(R.id.text_view_description_content);
+        text_view_places_content = findViewById(R.id.text_view_places_content);
+        text_view_teaser_content = findViewById(R.id.text_view_teaser_content);
 
+        dbQuestMap = new HashMap<>();
 
         openDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,7 +133,12 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         goToCurrentChallengeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Go to challenge", Toast.LENGTH_SHORT).show();
+                if(currentQuest!=-1){
+                    Intent intent = new Intent(getApplicationContext(), Quest.class);
+                    String message = "";
+                    intent.putExtra(EXTRA_MESSAGE, message);
+                    startActivity(intent);
+                }
 
             }
         });
@@ -119,12 +154,41 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
                 }
             }
         });
+        start_quest_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), Quest.class);
+                String message = "";
+                intent.putExtra(EXTRA_MESSAGE, message);
+                startActivity(intent);
+                currentQuest = 0;
+
+            }
+        });
         toolbar_navigation.setTitle("Settings");
         sliding_layout.setEnabled(false);
 
+        myRef.addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        //Get map of users in datasnapshot
+                        Log.w("TAG","AUFGERUFEN");
+                        questsHashMap  = ((Map<String,Object>) dataSnapshot.getValue());
+                        if(mGoogleMap!=null){
+                            clearMap();
+                            addMarker(questsHashMap);
+                        }
 
+                    }
 
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        //handle databaseError
+                    }
+                });
 
+        gMapsMarkerMap = new HashMap<String,Marker>();
     }
 
     @Override
@@ -186,10 +250,6 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             layoutParams.setMargins(0, 0, 30, 30);
         }
         googleMap.setOnMarkerClickListener(this);
-        rijksMuseumMarker = mGoogleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(52.3599976, 4.8852188))
-                .title("Rijksmuseum"));
-
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -325,14 +385,95 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
+        double dest_lat = 0;
+        double des_lon = 0;
 
-        if (marker.equals(rijksMuseumMarker)) {
-            sliding_layout.setEnabled(true);
-            mSelectedDestination = new LatLng(52.3599976, 4.8852188);
-            Toast.makeText(getApplicationContext(), "Rijksmuseum clicked", Toast.LENGTH_SHORT).show();
-            sliderToolbar.setTitle("Rijksmuseum");
+        for (Map.Entry<String, Marker> tmpMarkerEntry : gMapsMarkerMap.entrySet()){
+            if(marker.equals(tmpMarkerEntry.getValue())){
+                Marker tmpMarker = tmpMarkerEntry.getValue();
+                LatLng position = tmpMarker.getPosition();
+                sliding_layout.setEnabled(true);
+                mSelectedDestination = new LatLng(position.latitude, position.longitude);
+                sliderToolbar.setTitle(tmpMarker.getTitle());
+                dest_lat = mSelectedDestination.latitude;
+                des_lon = mSelectedDestination.longitude;
+
+                String key = tmpMarkerEntry.getKey();
+                DBQuest tempDBQuest = dbQuestMap.get(key);
+                text_view_description_content.setText(tempDBQuest.getDescription());
+                text_view_places_content.setText(tempDBQuest.getPlaces());
+                text_view_teaser_content.setText(tempDBQuest.getTeaser());
+            }
+        }
+        if(distance(dest_lat, des_lon, mLastLocation.getLatitude(),mLastLocation.getLongitude())>1){
+            start_navigation_btn.setEnabled(true);
+            start_navigation_btn.setClickable(true);
+            start_quest_btn.setEnabled(false);
+            start_quest_btn.setClickable(false);
+        }
+        else{
+            start_navigation_btn.setEnabled(false);
+            start_quest_btn.setEnabled(true);
+            start_quest_btn.setClickable(true);
+            start_navigation_btn.setClickable(false);
         }
         return false;
     }
+    private double distance(double lat1, double lon1, double lat2, double lon2) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1))
+                * Math.sin(deg2rad(lat2))
+                + Math.cos(deg2rad(lat1))
+                * Math.cos(deg2rad(lat2))
+                * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        return (dist);
+    }
 
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
+    }
+
+    public void clearMap(){
+        mGoogleMap.clear();
+    }
+
+    public void addMarker(Map<String, Object> tempMap){
+        Marker tempMarker;
+        mGoogleMap.clear();
+        for (Map.Entry<String, Object> entry : tempMap.entrySet()){
+            String key = entry.getKey();
+            Map singleChallenge = (Map) entry.getValue();
+            String description = singleChallenge.get("description").toString();
+            String places = singleChallenge.get("places").toString();
+            String teaser = singleChallenge.get("teaser").toString();
+            String title = singleChallenge.get("title").toString();
+            long time = (long)singleChallenge.get("time");
+            double lat = (double)singleChallenge.get("lat");
+            double lon = (double)singleChallenge.get("lon");
+
+            DBQuest tempDBQuest = new DBQuest(description,places,teaser,title,time,lat,lon);
+            dbQuestMap.put(key,tempDBQuest);
+            tempMarker = mGoogleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(lat,lon))
+                    .title(title));
+            gMapsMarkerMap.put(key,tempMarker);
+            Log.w("addMarker",key+ ": "+lat);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mGoogleMap!=null) {
+            clearMap();
+            addMarker(questsHashMap);
+        }
+    }
 }

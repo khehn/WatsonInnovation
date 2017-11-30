@@ -89,17 +89,34 @@
                 android:layout_margin="5dp"
                 android:layout_height="200dp"
                 card_view:cardCornerRadius="4dp">
-                    <TextView
-                        android:id="@+id/tv_1"
-                        android:layout_margin="5dp"
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/slideMenu_first_text"
-                        android:layout_marginTop="5dp"
-                        android:textAllCaps="false"
-                        android:textSize="19sp"
-                        android:layout_marginBottom="5dp"
-                        />
+                        android:padding="16dp">
+                        <TextView
+                            android:id="@+id/text_view_description_title"
+                            android:layout_margin="5dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Description"
+                            android:layout_marginTop="5dp"
+                            android:textAllCaps="false"
+                            android:textSize="30sp"
+                            android:layout_marginBottom="5dp"
+                            android:layout_alignParentTop="true"
+                            />
+                        <TextView
+                            android:id="@+id/text_view_description_content"
+                            android:layout_margin="5dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/slideMenu_first_text"
+                            android:layout_marginTop="5dp"
+                            android:textAllCaps="false"
+                            android:layout_marginBottom="5dp"
+                            android:layout_below="@+id/text_view_description_title"
+                            />
+                    </RelativeLayout>
             </android.support.v7.widget.CardView>
             <android.support.v7.widget.CardView
                 xmlns:card_view="http://schemas.android.com/apk/res-auto"
@@ -109,17 +126,34 @@
                 android:layout_height="200dp"
                 android:layout_margin="5dp"
                 card_view:cardCornerRadius="4dp">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
                     <TextView
-                        android:id="@+id/tv_2"
+                        android:id="@+id/text_view_places_title"
+                        android:layout_margin="5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Places"
+                        android:layout_marginTop="5dp"
+                        android:textAllCaps="false"
+                        android:textSize="30sp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_alignParentTop="true"
+                        />
+                    <TextView
+                        android:id="@+id/text_view_places_content"
                         android:layout_margin="5dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/slideMenu_first_text"
                         android:layout_marginTop="5dp"
                         android:textAllCaps="false"
-                        android:textSize="19sp"
                         android:layout_marginBottom="5dp"
+                        android:layout_below="@+id/text_view_places_title"
                         />
+                </RelativeLayout>
             </android.support.v7.widget.CardView>
                         <android.support.v7.widget.CardView
                             xmlns:card_view="http://schemas.android.com/apk/res-auto"
@@ -129,17 +163,34 @@
                             android:layout_height="200dp"
                             android:layout_margin="5dp"
                             card_view:cardCornerRadius="4dp">
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:padding="16dp">
                             <TextView
-                                android:id="@+id/tv_3"
+                                android:id="@+id/text_view_teaser_title"
+                                android:layout_margin="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Teaser"
+                                android:layout_marginTop="5dp"
+                                android:textAllCaps="false"
+                                android:textSize="30sp"
+                                android:layout_marginBottom="5dp"
+                                android:layout_alignParentTop="true"
+                                />
+                            <TextView
+                                android:id="@+id/text_view_teaser_content"
                                 android:layout_margin="5dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="@string/slideMenu_first_text"
                                 android:layout_marginTop="5dp"
                                 android:textAllCaps="false"
-                                android:textSize="19sp"
                                 android:layout_marginBottom="5dp"
+                                android:layout_below="@+id/text_view_teaser_title"
                                 />
+                            </RelativeLayout>
                         </android.support.v7.widget.CardView>
                     </LinearLayout>
                 </ScrollView>
@@ -156,12 +207,16 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:text="Navigate"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:backgroundTint="#0d36be"
                     android:drawableLeft="@drawable/ic_explore_black_24dp"/>
                 <Button
                     android:id="@+id/start_quest_btn"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:backgroundTint="#dc0b0b"
                     android:text="Start Quest" />
             </LinearLayout>
                 </LinearLayout>
