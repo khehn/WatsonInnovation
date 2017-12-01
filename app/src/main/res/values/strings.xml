@@ -28,6 +28,7 @@
     <string name="slideMenu_first_text">Here goes some example text which should describe the
     challenge in detail. Bla Bla Bla. This is just some sample text and needs to be removed
     soon</string>
+    <string name="app_intro">App Intro</string>
 
 
 </resources>

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Point;
@@ -107,6 +108,18 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+
+        SharedPreferences sp = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
+        if (!sp.getBoolean("first", false)) {
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putBoolean("first", true);
+            editor.apply();
+            Intent intent = new Intent(this, IntroActivity.class); // Call the AppIntro java class
+            startActivity(intent);
+        }
+
+
 
         myRef = database.getReference("/project/quests/");
 
@@ -474,8 +487,9 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             long time = (long)singleChallenge.get("time");
             double lat = (double)singleChallenge.get("lat");
             double lon = (double)singleChallenge.get("lon");
+            String type = singleChallenge.get("type").toString();
 
-            DBQuest tempDBQuest = new DBQuest(description,places,teaser,title,time,lat,lon);
+            DBQuest tempDBQuest = new DBQuest(description,places,teaser,title,time,lat,lon,type);
             dbQuestMap.put(key,tempDBQuest);
             tempMarker = mGoogleMap.addMarker(new MarkerOptions()
                     .position(new LatLng(lat,lon))

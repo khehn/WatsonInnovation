@@ -68,7 +68,7 @@ public class TinderCard {
     private void onSwipeIn(){
         Log.d("EVENT", "onSwipedIn");
         if(pos==2){
-            Intent intent = new Intent(mContext, MapsActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);;
+            Intent intent = new Intent(mContext, MapsActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivity(intent);
             ((Activity) mContext).finish();
         }

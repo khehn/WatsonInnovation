@@ -8,8 +8,9 @@ public class DBQuest {
     public long time;
     public double lat;
     public double lon;
+    public String type;
 
-    public DBQuest(String description, String places, String teaser, String title, long time, double lat, double lon) {
+    public DBQuest(String description, String places, String teaser, String title, long time, double lat, double lon, String type) {
         this.description = description;
         this.places = places;
         this.teaser = teaser;
@@ -17,6 +18,7 @@ public class DBQuest {
         this.time = time;
         this.lat = lat;
         this.lon = lon;
+        this.type = type;
     }
 
     public String getDescription() {
@@ -73,5 +75,13 @@ public class DBQuest {
 
     public void setLon(double lon) {
         this.lon = lon;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

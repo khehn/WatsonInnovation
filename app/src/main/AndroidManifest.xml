@@ -70,9 +70,11 @@
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
         <activity android:name=".Quest" />
-        <activity android:name=".SwipeActivity">
-
-        </activity>
+        <activity android:name=".SwipeActivity" />
+        <activity
+            android:name=".IntroActivity"
+            android:label="@string/app_intro" />
+        <activity android:name=".PhotoChallengeActivity"></activity>
     </application>
 
 </manifest>
