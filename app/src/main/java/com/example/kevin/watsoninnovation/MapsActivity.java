@@ -81,18 +81,13 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     ImageButton openDrawerButton;
     DrawerLayout mDrawerLayout;
     Button start_navigation_btn;
-    Marker rijksMuseumMarker;
-    Marker VUMarker;
-    Marker Uilenstede;
     Toolbar sliderToolbar;
     SlidingUpPanelLayout sliding_layout;
     Toolbar toolbar_navigation;
-    private GridView gridView;
-    static final View[] containers = new View[1];
     //Firebase objects
     private FirebaseAnalytics mFirebaseAnalytics;
     private FirebaseAuth mAuth;
-    static int currentQuest = -1;
+
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("/project/quests/");
     TextView text_view_description_content;
@@ -102,7 +97,6 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
 
     Map<String,Object> questsHashMap;
     Map<String,Marker> gMapsMarkerMap;
-    Map<String,DBQuest> dbQuestMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,8 +136,6 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         text_view_teaser_content = findViewById(R.id.text_view_teaser_content);
         navigation_drawer_logout = findViewById(R.id.navigation_drawer_logout);
 
-        dbQuestMap = new HashMap<>();
-
         openDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -153,20 +145,27 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         goToCurrentChallengeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(currentQuest!=-1){
-                    Intent intent = new Intent(getApplicationContext(), Quest.class);
-                    String message = "";
-                    intent.putExtra(EXTRA_MESSAGE, message);
-                    startActivity(intent);
+                if(((MyApplication) getApplication()).isQuestRunning()){
+                    DBQuest questToStart = ((MyApplication) getApplication()).getDbQuestMap().get(((MyApplication) getApplication()).getCurrentQuestKey());
+                    String type = questToStart.getType();
+                    if(type.equals("photo")){
+                        Intent intent = new Intent(getApplicationContext(), PhotoChallengeActivity.class);
+                        String message = "";
+                        intent.putExtra(EXTRA_MESSAGE, message);
+                        startActivity(intent);
+
+                    }
+
+
                 }
 
             }
         });
+
         start_navigation_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(mSelectedDestination!=null) {
-
                     Uri gmmIntentUri = Uri.parse("google.navigation:q="+mSelectedDestination.latitude+","+mSelectedDestination.longitude+"&mode=w");
                     Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                     mapIntent.setPackage("com.google.android.apps.maps");
@@ -177,16 +176,25 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         start_quest_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), Quest.class);
-                String message = "";
-                intent.putExtra(EXTRA_MESSAGE, message);
-                startActivity(intent);
-                currentQuest = 0;
+                ((MyApplication) getApplication()).setQuestRunning(true);
+                if(((MyApplication) getApplication()).isQuestRunning()){
+                    DBQuest questToStart = ((MyApplication) getApplication()).getDbQuestMap().get(((MyApplication) getApplication()).getCurrentQuestKey());
+                    String type = questToStart.getType();
+                    if(type.equals("photo")){
+                        Intent intent = new Intent(getApplicationContext(), PhotoChallengeActivity.class);
+                        String message = "";
+                        intent.putExtra(EXTRA_MESSAGE, message);
+                        startActivity(intent);
+                        sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+
+
+                }
 
             }
         });
         toolbar_navigation.setTitle("Settings");
-        sliding_layout.setEnabled(false);
+        sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 
         myRef.addValueEventListener(
                 new ValueEventListener() {
@@ -284,7 +292,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             @Override
             public void onMapClick(LatLng latLng) {
                 mSelectedDestination = null;
-                sliding_layout.setEnabled(false);
+                sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                 sliderToolbar.setTitle("");
             }
         });
@@ -422,19 +430,28 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             if(marker.equals(tmpMarkerEntry.getValue())){
                 Marker tmpMarker = tmpMarkerEntry.getValue();
                 LatLng position = tmpMarker.getPosition();
-                sliding_layout.setEnabled(true);
+                sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
                 mSelectedDestination = new LatLng(position.latitude, position.longitude);
                 sliderToolbar.setTitle(tmpMarker.getTitle());
                 dest_lat = mSelectedDestination.latitude;
                 des_lon = mSelectedDestination.longitude;
 
                 String key = tmpMarkerEntry.getKey();
-                DBQuest tempDBQuest = dbQuestMap.get(key);
+                DBQuest tempDBQuest = ((MyApplication) getApplication()).getDbQuestMap().get(key);
                 text_view_description_content.setText(tempDBQuest.getDescription());
                 text_view_places_content.setText(tempDBQuest.getPlaces());
                 text_view_teaser_content.setText(tempDBQuest.getTeaser());
+                ((MyApplication) getApplication()).setCurrentQuestKey(key);
             }
         }
+        if(((MyApplication) getApplication()).isQuestRunning()){
+            start_quest_btn.setEnabled(false);
+            start_quest_btn.setClickable(false);
+            start_navigation_btn.setEnabled(false);
+            start_navigation_btn.setClickable(false);
+            return false;
+        }
+
         if(distance(dest_lat, des_lon, mLastLocation.getLatitude(),mLastLocation.getLongitude())>1){
             start_navigation_btn.setEnabled(true);
             start_navigation_btn.setClickable(true);
@@ -488,9 +505,17 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             double lat = (double)singleChallenge.get("lat");
             double lon = (double)singleChallenge.get("lon");
             String type = singleChallenge.get("type").toString();
+            String neededClass = "";
+            if(type=="photo"){
+                neededClass = singleChallenge.get("needed_class").toString();
+            }
 
-            DBQuest tempDBQuest = new DBQuest(description,places,teaser,title,time,lat,lon,type);
-            dbQuestMap.put(key,tempDBQuest);
+            DBQuest tempDBQuest = new DBQuest(description,places,teaser,title,time,lat,lon,type, neededClass);
+            Map<String,DBQuest> tmpMap = ((MyApplication) getApplication()).getDbQuestMap();
+            if(tmpMap==null)
+                tmpMap = new HashMap<String, DBQuest>();
+            tmpMap.put(key,tempDBQuest);
+            ((MyApplication) getApplication()).setDbQuestMap(tmpMap);
             tempMarker = mGoogleMap.addMarker(new MarkerOptions()
                     .position(new LatLng(lat,lon))
                     .title(title));
