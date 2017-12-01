@@ -1,6 +1,8 @@
 package com.example.kevin.watsoninnovation;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -53,6 +55,8 @@ public class SwipeActivity extends AppCompatActivity {
                 mSwipeView.doSwipe(true);
             }
         });
+
+
     }
 
 }
