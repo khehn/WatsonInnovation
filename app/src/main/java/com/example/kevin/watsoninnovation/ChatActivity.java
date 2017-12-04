@@ -47,6 +47,7 @@ public class ChatActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle("Ask Watson");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat2);
 
