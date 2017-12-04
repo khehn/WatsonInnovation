@@ -1,41 +1,50 @@
 package com.example.kevin.watsoninnovation;
 
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.provider.Settings;
+import android.view.View;
 
 import com.facebook.login.LoginManager;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -59,21 +68,21 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.premnirmal.Magnet.Magnet;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
 import static android.provider.AlarmClock.EXTRA_MESSAGE;
 
-public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarkerClickListener,OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapsActivity extends FragmentActivity implements ServiceConnection, GoogleMap.OnMarkerClickListener,OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     GoogleMap mGoogleMap;
     SupportMapFragment mapFrag;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
-    Location mLastLocation;
+    Location mLastLocation = new Location("");
     LatLng mSelectedDestination;
     View mapView;
     Button goToCurrentChallengeButton;
@@ -87,6 +96,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     //Firebase objects
     private FirebaseAnalytics mFirebaseAnalytics;
     private FirebaseAuth mAuth;
+    final int REQUEST_CODE = 2300;
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("/project/quests/");
@@ -94,16 +104,23 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     TextView text_view_places_content;
     TextView text_view_teaser_content;
     TextView navigation_drawer_logout;
+    FloatingActionButton chatbutton;
+    private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
 
     Map<String,Object> questsHashMap;
     Map<String,Marker> gMapsMarkerMap;
+
+    MyService.IconService iconService;
+    boolean isBound;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-
+        mLastLocation.setLatitude(52.370216);//your coords of course
+        mLastLocation.setLongitude(4.895168);
         SharedPreferences sp = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
         if (!sp.getBoolean("first", false)) {
             SharedPreferences.Editor editor = sp.edit();
@@ -135,6 +152,8 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         text_view_places_content = findViewById(R.id.text_view_places_content);
         text_view_teaser_content = findViewById(R.id.text_view_teaser_content);
         navigation_drawer_logout = findViewById(R.id.navigation_drawer_logout);
+        chatbutton = findViewById(R.id.chatbutton);
+
 
         openDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,20 +195,22 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
         start_quest_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((MyApplication) getApplication()).setQuestRunning(true);
-                if(((MyApplication) getApplication()).isQuestRunning()){
                     DBQuest questToStart = ((MyApplication) getApplication()).getDbQuestMap().get(((MyApplication) getApplication()).getCurrentQuestKey());
                     String type = questToStart.getType();
                     if(type.equals("photo")){
+                        goToCurrentChallengeButton.setText("Current Challenge: "+questToStart.getTitle());
                         Intent intent = new Intent(getApplicationContext(), PhotoChallengeActivity.class);
                         String message = "";
                         intent.putExtra(EXTRA_MESSAGE, message);
                         startActivity(intent);
                         sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                        ((MyApplication) getApplication()).setQuestRunning(true);
+                    } else {
+                        ((MyApplication) getApplication()).setQuestRunning(false);
                     }
 
 
-                }
+
 
             }
         });
@@ -225,8 +246,25 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
                 updateUI(currentUser);
             }
         });
+        chatbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+                startActivity(intent);
+            }
+        });
+
 
         gMapsMarkerMap = new HashMap<String,Marker>();
+
+
+
+
+
+    }
+    @Override
+    public void onBackPressed() {
+        // INTENT FOR YOUR HOME ACTIVITY
     }
 
     @Override
@@ -297,8 +335,6 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             }
         });
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
-
-
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -308,6 +344,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
+
     }
 
     @Override
@@ -321,6 +358,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
                 == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
+
     }
 
     @Override
@@ -425,7 +463,7 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
     public boolean onMarkerClick(final Marker marker) {
         double dest_lat = 0;
         double des_lon = 0;
-
+        //checkAndLaunch();
         for (Map.Entry<String, Marker> tmpMarkerEntry : gMapsMarkerMap.entrySet()){
             if(marker.equals(tmpMarkerEntry.getValue())){
                 Marker tmpMarker = tmpMarkerEntry.getValue();
@@ -531,10 +569,16 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             clearMap();
             addMarker(questsHashMap);
         }
+        if(!((MyApplication) getApplication()).isQuestRunning()){
+            goToCurrentChallengeButton.setVisibility(View.INVISIBLE);
+        }else {
+            goToCurrentChallengeButton.setVisibility(View.VISIBLE);
+        }
     }
     @Override
     public void onStart() {
         super.onStart();
+        sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         updateUI(currentUser);
@@ -546,5 +590,72 @@ public class MapsActivity extends FragmentActivity implements GoogleMap.OnMarker
             LoginManager.getInstance().logOut();
             finish();
         }
+    }
+    void checkAndLaunch() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                final Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, REQUEST_CODE);
+            } else {
+                launchService();
+            }
+        } else {
+            launchService();
+        }
+    }
+
+    void launchService() {
+        final Intent intent = new Intent(this, MyService.class);
+        startService(intent);
+        bindService(intent, this, Context.BIND_AUTO_CREATE);
+        isBound = true;
+
+        iconService.startMagnet();
+                /*
+        findViewById(R.id.start_button).setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) {
+                iconService.startMagnet();
+            }
+        });
+        findViewById(R.id.stop_button).setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) {
+                iconService.stopMagnet();
+            }
+        });*/
+    }
+
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (Settings.canDrawOverlays(this)) {
+                    launchService();
+                } else {
+                    new AlertDialog.Builder(this).setTitle("Permission")
+                            .setMessage("Need Permission")
+                            .setCancelable(false)
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.dismiss();
+                                    finish();
+                                }
+                            })
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override public void onClick(DialogInterface dialogInterface, int i) {
+                                    checkAndLaunch();
+                                }
+                            })
+                            .show();
+                }
+            }
+        }
+    }
+    @Override public void onServiceConnected(ComponentName className, IBinder binder) {
+        iconService = (MyService.IconService) binder;
+    }
+
+    @Override public void onServiceDisconnected(ComponentName className) {
+        iconService = null;
     }
 }

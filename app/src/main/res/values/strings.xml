@@ -29,6 +29,7 @@
     challenge in detail. Bla Bla Bla. This is just some sample text and needs to be removed
     soon</string>
     <string name="app_intro">App Intro</string>
+    <string name="hint_enter_a_message">Enter a message</string>
 
 
 </resources>

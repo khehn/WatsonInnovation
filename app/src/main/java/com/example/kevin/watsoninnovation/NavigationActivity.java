@@ -440,8 +440,8 @@ public class NavigationActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
                                             mAdapter.add(
-                                                    Html.fromHtml("<p><b>Bot:</b> " +
-                                                            outputText + "</p>")
+                                                    Html.fromHtml("" +
+                                                            outputText + "")
                                             );
                                         }
                                     });

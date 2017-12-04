@@ -17,9 +17,11 @@
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.kevin.watsoninnovation.MapsActivity">
+
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -44,12 +46,22 @@
 
     </RelativeLayout>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/chatbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
+        android:clickable="true"
+
+        sothree:rippleColor="@color/transparent" />
     <ImageButton
         android:id="@+id/menuDrawerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
          />
 </FrameLayout>
+
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
@@ -261,5 +273,7 @@
 
     </android.support.design.widget.NavigationView>
 
+
 </android.support.v4.widget.DrawerLayout>
+
 
