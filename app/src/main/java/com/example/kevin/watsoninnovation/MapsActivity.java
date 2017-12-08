@@ -121,14 +121,7 @@ public class MapsActivity extends FragmentActivity implements ServiceConnection,
 
         mLastLocation.setLatitude(52.370216);//your coords of course
         mLastLocation.setLongitude(4.895168);
-        SharedPreferences sp = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
-        if (!sp.getBoolean("first", false)) {
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putBoolean("first", true);
-            editor.apply();
-            Intent intent = new Intent(this, IntroActivity.class); // Call the AppIntro java class
-            startActivity(intent);
-        }
+
 
 
 
@@ -198,6 +191,10 @@ public class MapsActivity extends FragmentActivity implements ServiceConnection,
                     DBQuest questToStart = ((MyApplication) getApplication()).getDbQuestMap().get(((MyApplication) getApplication()).getCurrentQuestKey());
                     String type = questToStart.getType();
                     if(type.equals("photo")){
+                        Bundle params = new Bundle();
+                        params.putString("quest_name", questToStart.getTitle());
+                        mFirebaseAnalytics.logEvent("quest_started", params);
+
                         goToCurrentChallengeButton.setText("Current Challenge: "+questToStart.getTitle());
                         Intent intent = new Intent(getApplicationContext(), PhotoChallengeActivity.class);
                         String message = "";

@@ -61,9 +61,15 @@ public class PhotoChallengeActivity extends AppCompatActivity {
                 takePicture(view);
             }
         });
+
         btn_abort_photo_challenge.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                DBQuest questToStart = ((MyApplication) getApplication()).getDbQuestMap().get(((MyApplication) getApplication()).getCurrentQuestKey());
+
+                Bundle params = new Bundle();
+                params.putString("quest_name", questToStart.getTitle());
+                mFirebaseAnalytics.logEvent("quest_aborted", params);
                 ((MyApplication) getApplication()).setQuestRunning(false);
                 finish();
             }

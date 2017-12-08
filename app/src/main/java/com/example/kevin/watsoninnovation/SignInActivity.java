@@ -1,7 +1,9 @@
 package com.example.kevin.watsoninnovation;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -15,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -61,12 +64,25 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_sign_in);
 
         //Set up firebase
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        SharedPreferences sp = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
+        if (!sp.getBoolean("first", false)) {
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putBoolean("first", true);
+            editor.apply();
+            Intent intent = new Intent(this, IntroActivity.class); // Call the AppIntro java class
+            startActivity(intent);
+        }
+
+
+
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .requestProfile()

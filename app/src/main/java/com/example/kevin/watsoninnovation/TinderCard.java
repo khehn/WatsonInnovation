@@ -36,23 +36,44 @@ public class TinderCard {
 
     private Context mContext;
     private SwipePlaceHolderView mSwipeView;
+    String text = "";
 
-    public TinderCard(Context context, SwipePlaceHolderView swipeView, int pos) {
+    public TinderCard(Context context, SwipePlaceHolderView swipeView, int pos, String text) {
         mContext = context;
         mSwipeView = swipeView;
         this.pos = pos;
+        this.text = text;
     }
 
     @Resolve
     private void onResolved(){
-        nameAgeTxt.setText("Test" + ", " + "18");
-        locationNameTxt.setText("Location");
+        nameAgeTxt.setText(text);
+        locationNameTxt.setText("Swipe left or right");
+
+        if(pos==0)
+            profileImageView.setImageResource(R.drawable.active);
+        if(pos==1)
+            profileImageView.setImageResource(R.drawable.adventure);
+        if(pos==2)
+            profileImageView.setImageResource(R.drawable.relaxing);
+        if(pos==3)
+            profileImageView.setImageResource(R.drawable.family);
+        if(pos==4)
+            profileImageView.setImageResource(R.drawable.young);
+        if(pos==5)
+            profileImageView.setImageResource(R.drawable.history);
+        if(pos==6)
+            profileImageView.setImageResource(R.drawable.art);
+        if(pos==7)
+            profileImageView.setImageResource(R.drawable.group);
+
+        profileImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
     }
 
     @SwipeOut
     private void onSwipedOut(){
         Log.d("EVENT", "onSwipedOut");
-        if(pos==2){
+        if(pos==7){
             Intent intent = new Intent(mContext, MapsActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);;
             mContext.startActivity(intent);
             ((Activity) mContext).finish();
@@ -67,7 +88,7 @@ public class TinderCard {
     @SwipeIn
     private void onSwipeIn(){
         Log.d("EVENT", "onSwipedIn");
-        if(pos==2){
+        if(pos==7){
             Intent intent = new Intent(mContext, MapsActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivity(intent);
             ((Activity) mContext).finish();

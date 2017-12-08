@@ -35,9 +35,15 @@ public class SwipeActivity extends AppCompatActivity {
                         .setSwipeInMsgLayoutId(R.layout.tinder_swipe_in_msg_view)
                         .setSwipeOutMsgLayoutId(R.layout.tinder_swipe_out_msg_view));
 
-        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 0));
-        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 1));
-        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 2));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 0, "Do you want to be active?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 1, "Do you like adventures?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 2, "What about some relaxing activities?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 3, "Are you alone or with your family?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 4, "Would you consider yourself as young?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 5, "Are you into history?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 6, "What about art?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 7, "Are you a group of people?"));
+
 
 
 

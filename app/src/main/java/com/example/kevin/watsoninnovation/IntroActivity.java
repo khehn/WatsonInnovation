@@ -39,12 +39,26 @@ public class IntroActivity extends AppIntro2 {
 
         // Instead of fragments, you can also use our default slide
         // Just set a title, description, background and image. AppIntro will do the rest.
-        String title = "Test";
-        String description = "Dummy Description";
-        int image = R.drawable.iamsterdam;
-        int backgroundColor = Color.parseColor("#2196F3");
+        String title = "Welcome to Escape the Crowd";
+        String description = "This app will help you explore the wider area of Amsterdam!";
+        int image = R.drawable.logo;
+        int backgroundColor = Color.parseColor("#FFAB91");
         addSlide(AppIntroFragment.newInstance(title, description, image, backgroundColor));
+        image = R.drawable.rsz_tut_1;
+        description  = "Before you start we want to get to know you. \n " +
+                "So please sign in using either Google or Facebook";
+
         addSlide(AppIntroFragment.newInstance(title, description, image, backgroundColor));
+        image = R.drawable.rsz_tut_2;
+        title = "Second Step";
+        description  = "Tell us what you want to do during your trip";
+        addSlide(AppIntroFragment.newInstance(title, description, image, backgroundColor));
+        image = R.drawable.rsz_tut_3;
+        title = "Start exploring";
+        description  = "Based on what you selected, we offer you personalized challenges. \n"
+                +"Just click on the markers on the map and start escaping the crowd!";
+        addSlide(AppIntroFragment.newInstance(title, description, image, backgroundColor));
+
 
         // OPTIONAL METHODS
         // Override bar/separator color.
