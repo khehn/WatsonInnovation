@@ -45,6 +45,7 @@ public class IntroActivity extends AppIntro2 {
         int backgroundColor = Color.parseColor("#FFAB91");
         addSlide(AppIntroFragment.newInstance(title, description, image, backgroundColor));
         image = R.drawable.rsz_tut_1;
+        title = "First step";
         description  = "Before you start we want to get to know you. \n " +
                 "So please sign in using either Google or Facebook";
 

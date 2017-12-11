@@ -255,9 +255,6 @@ public class MapsActivity extends FragmentActivity implements ServiceConnection,
         gMapsMarkerMap = new HashMap<String,Marker>();
 
 
-
-
-
     }
     @Override
     public void onBackPressed() {
@@ -332,6 +329,8 @@ public class MapsActivity extends FragmentActivity implements ServiceConnection,
             }
         });
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
+        HttpClientTest httpClient = new HttpClientTest();
+        httpClient.execute();
     }
 
     protected synchronized void buildGoogleApiClient() {
