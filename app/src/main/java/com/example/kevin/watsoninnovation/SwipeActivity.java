@@ -43,6 +43,9 @@ public class SwipeActivity extends AppCompatActivity {
         mSwipeView.addView(new TinderCard(mContext, mSwipeView, 5, "Are you into history?"));
         mSwipeView.addView(new TinderCard(mContext, mSwipeView, 6, "What about art?"));
         mSwipeView.addView(new TinderCard(mContext, mSwipeView, 7, "Are you a group of people?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 8, "What about some mysterious stuff?"));
+        mSwipeView.addView(new TinderCard(mContext, mSwipeView, 9, "Are you playing as a couple?"));
+
 
 
 

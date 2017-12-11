@@ -105,7 +105,6 @@ public class MapsActivity extends FragmentActivity implements ServiceConnection,
     TextView text_view_teaser_content;
     TextView navigation_drawer_logout;
     FloatingActionButton chatbutton;
-    private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
 
     Map<String,Object> questsHashMap;
     Map<String,Marker> gMapsMarkerMap;
@@ -191,6 +190,7 @@ public class MapsActivity extends FragmentActivity implements ServiceConnection,
                     DBQuest questToStart = ((MyApplication) getApplication()).getDbQuestMap().get(((MyApplication) getApplication()).getCurrentQuestKey());
                     String type = questToStart.getType();
                     if(type.equals("photo")){
+                        ((MyApplication) getApplication()).setRunningQuest(((MyApplication) getApplication()).getCurrentQuestKey());
                         Bundle params = new Bundle();
                         params.putString("quest_name", questToStart.getTitle());
                         mFirebaseAnalytics.logEvent("quest_started", params);
@@ -253,6 +253,8 @@ public class MapsActivity extends FragmentActivity implements ServiceConnection,
 
 
         gMapsMarkerMap = new HashMap<String,Marker>();
+
+
 
 
     }
@@ -329,8 +331,7 @@ public class MapsActivity extends FragmentActivity implements ServiceConnection,
             }
         });
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
-        HttpClientTest httpClient = new HttpClientTest();
-        httpClient.execute();
+
     }
 
     protected synchronized void buildGoogleApiClient() {

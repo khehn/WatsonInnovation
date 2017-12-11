@@ -45,6 +45,7 @@ public class PhotoChallengeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_challenge);
 
+        Log.w("Quest ID", ((MyApplication) getApplication()).getRunningQuest());
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         btn_take_a_picture_photo_challenge = findViewById(R.id.btn_take_a_picture_photo_challenge);
         btn_abort_photo_challenge = findViewById(R.id.btn_abort_photo_challenge);
@@ -58,6 +59,7 @@ public class PhotoChallengeActivity extends AppCompatActivity {
         btn_take_a_picture_photo_challenge.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.w("Photo","Test");
                 takePicture(view);
             }
         });
@@ -87,7 +89,9 @@ public class PhotoChallengeActivity extends AppCompatActivity {
                                     int resultCode,
                                     Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        Log.w("Test", "TestOnActivityResult");
+        if(data==null)
+            return;
         if(requestCode == CameraHelper.REQUEST_IMAGE_CAPTURE) {
 
             final Bitmap photo = helper.getBitmap(resultCode);
@@ -105,7 +109,7 @@ public class PhotoChallengeActivity extends AppCompatActivity {
              */
 
 
-                    Log.d("File",photoFile.toString());
+                    Log.w("File",photoFile.toString());
                     Bitmap b = getResizedBitmap(photo,1000,1000);
 
 
@@ -135,7 +139,7 @@ public class PhotoChallengeActivity extends AppCompatActivity {
                     response = vrClient.classify(
                             new ClassifyImagesOptions.Builder()
                                     .images(f)
-                                    .classifierIds("Try_866893376")
+                                    .classifierIds("Try_586142397")
                                     .build()
 
                     ).execute();
@@ -159,12 +163,13 @@ public class PhotoChallengeActivity extends AppCompatActivity {
                     VisualClassifier classifier =
                             classification.getClassifiers().get(0);
                     final StringBuffer output = new StringBuffer();
+                    double maxScore = 0;
+                    String currentMax = "NO RESULT";
                     for(VisualClassifier.VisualClass object: classifier.getClasses()) {
-                        if(object.getScore() > 0.4f)
-                            output.append("<")
-                                    .append(object.getName())
-                                    .append("> \n");
+                        if(object.getScore() > 0.6f &&  object.getScore()>maxScore)
+                            currentMax = object.getName();
                     }
+                    output.append(currentMax);
                     //Update UI
                     runOnUiThread(new Runnable() {
                         @Override

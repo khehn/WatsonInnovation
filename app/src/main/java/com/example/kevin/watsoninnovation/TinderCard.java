@@ -4,6 +4,7 @@ package com.example.kevin.watsoninnovation;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -73,8 +74,41 @@ public class TinderCard {
     @SwipeOut
     private void onSwipedOut(){
         Log.d("EVENT", "onSwipedOut");
-        if(pos==7){
-            Intent intent = new Intent(mContext, MapsActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);;
+        MyApplication x = (MyApplication)mContext.getApplicationContext();
+        if(pos==0)
+            x.setAction(0);
+        if(pos==1)
+            x.setAdventure(0);
+        if(pos==2)
+            x.setCalm(0);
+        if(pos==3)
+            x.setFamily(0);
+        if(pos==4)
+            x.setYoung(0);
+        if(pos==5)
+            x.setHistory(0);
+        if(pos==6)
+            x.setArt(0);
+        if(pos==7)
+            x.setGroup(0);
+        if(pos==8)
+            x.setMystery(0);
+        if(pos==9)
+            x.setCouple(0);
+
+
+        if(pos==9){
+            Intent intent = new Intent(mContext, MapsActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            HttpClientTest httpClient0 = new HttpClientTest(mContext,"1000");
+            httpClient0.execute();
+            HttpClientTest httpClient1 = new HttpClientTest(mContext,"1001");
+            httpClient1.execute();
+            HttpClientTest httpClient2 = new HttpClientTest(mContext,"1002");
+            httpClient2.execute();
+            HttpClientTest httpClient3 = new HttpClientTest(mContext,"1003");
+            httpClient3.execute();
+            HttpClientTest httpClient4 = new HttpClientTest(mContext,"1004");
+            httpClient4.execute();
             mContext.startActivity(intent);
             ((Activity) mContext).finish();
         }
@@ -88,8 +122,40 @@ public class TinderCard {
     @SwipeIn
     private void onSwipeIn(){
         Log.d("EVENT", "onSwipedIn");
-        if(pos==7){
+        MyApplication x = (MyApplication)mContext.getApplicationContext();
+        if(pos==0)
+            x.setAction(1);
+        if(pos==1)
+            x.setAdventure(1);
+        if(pos==2)
+            x.setCalm(1);
+        if(pos==3)
+            x.setFamily(1);
+        if(pos==4)
+            x.setYoung(1);
+        if(pos==5)
+            x.setHistory(1);
+        if(pos==6)
+            x.setArt(1);
+        if(pos==7)
+            x.setGroup(1);
+        if(pos==8)
+            x.setMystery(1);
+        if(pos==9)
+            x.setCouple(1);
+        if(pos==9){
             Intent intent = new Intent(mContext, MapsActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            HttpClientTest httpClient0 = new HttpClientTest(mContext,"1000");
+            httpClient0.execute();
+            HttpClientTest httpClient1 = new HttpClientTest(mContext,"1001");
+            httpClient1.execute();
+            HttpClientTest httpClient2 = new HttpClientTest(mContext,"1002");
+            httpClient2.execute();
+            HttpClientTest httpClient3 = new HttpClientTest(mContext,"1003");
+            httpClient3.execute();
+            HttpClientTest httpClient4 = new HttpClientTest(mContext,"1004");
+            httpClient4.execute();
+
             mContext.startActivity(intent);
             ((Activity) mContext).finish();
         }

@@ -1,11 +1,17 @@
 package com.example.kevin.watsoninnovation;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.*;
 import java.net.URLEncoder;
 import android.util.Base64;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.net.HttpURLConnection;
@@ -15,14 +21,32 @@ import java.nio.charset.StandardCharsets;
 import javax.net.ssl.HttpsURLConnection;
 
 
-public class HttpClientTest extends AsyncTask<Void, Integer, String> {
+public class HttpClientTest extends AsyncTask<Void, Integer, Boolean> {
 
+    Context mContext;
+    String questID;
+    public HttpClientTest(Context context, String questID) {
+        this.mContext = context;
+        this.questID = questID;
+    }
 
     @Override
-    protected String doInBackground(Void... voids) {
+    protected Boolean doInBackground(Void... voids) {
             // NOTE: you must manually construct wml_credentials hash map below
             // using information retrieved from your IBM Cloud Watson Machine Learning Service instance
             String output = "";
+        MyApplication x = (MyApplication)mContext.getApplicationContext();
+        int action = x.getAction();
+        int adventure = x.getAdventure();
+        int calm = x.getCalm();
+        int family = x.getFamily();
+        int young = x.getYoung();
+        int history = x.getHistory();
+        int art = x.getArt();
+        int group = x.getGroup();
+        int mystery = x.getMystery();
+        int couple = x.getCouple();
+
             Map<String, String> wml_credentials = new HashMap<String, String>()
             {{
                 put("url", "https://ibm-watson-ml.mybluemix.net");
@@ -79,7 +103,10 @@ public class HttpClientTest extends AsyncTask<Void, Integer, String> {
 
                 // NOTE: manually define and pass the array(s) of values to be scored in cthe next line
                 //String payload = "{\"fields\": [\"user_id\", \"history\", \"art\", \"calm\", \"action\", \"mystery\", \"adventure\", \"young\", \"group\", \"couple\", \"family\", \"quest_id\"], \"values\": [[0,1,0,0,1,1,1,1,0,0,1003]]}";
-                String payload = "{\"fields\": [\"user_id\", \"history\", \"art\", \"calm\", \"action\", \"mystery\", \"adventure\", \"young\", \"group\", \"couple\", \"family\", \"quest_id\"], \"values\": [[\"5a2d1089bccc7ec0d3475453\",1,1,0,1,1,1,0,1,0,0,1000]]}";
+                String payload = "{\"fields\": [\"user_id\", \"history\", \"art\", \"calm\", \"action\", \"mystery\", " +
+                        "\"adventure\", \"young\", \"group\", \"couple\", \"family\", \"quest_id\"], \"values\": " +
+                        "[[\"5a2d1089bccc7ec0d3475453\","+history+","+art+","+calm+","+action+","+mystery+","+adventure+","+young+","+group+"" +
+                        ","+couple+","+family+","+questID+"]]}";
                 writer.write(payload);
                 writer.flush();
                 writer.close();
@@ -122,7 +149,31 @@ public class HttpClientTest extends AsyncTask<Void, Integer, String> {
                 }
             }
         Log.d("HTTP",output);
-        return output;
+        double feedbackZero = 0;
+        double feebackOne = 0;
+        try {
+            JSONObject jObject = new JSONObject(output);
+            JSONArray jArray = jObject.getJSONArray("values");
+            JSONArray answerArray = (JSONArray) jArray.get(0);
+            JSONArray scoreArray = (JSONArray) answerArray.get(14);
+            feedbackZero = scoreArray.getDouble(0);
+            feebackOne = scoreArray.getDouble(1);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d("HTTP", "Zero: "+feedbackZero+"  One; "+feebackOne);
+
+        Map<String, Boolean> quests = x.getQuests();
+        if(quests==null)
+            quests = new HashMap<String,Boolean>();
+        quests.put(questID,(feebackOne>feedbackZero));
+        x.setQuests(quests);
+
+        if(feebackOne>0.6)
+            return true;
+        else
+            return false;
         }
 
 
