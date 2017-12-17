@@ -15,11 +15,7 @@ After this is set up, one can just launch the app on either the emulated or phys
 * [IBM Data Science Experience](https://datascience.ibm.com/) - Building ML models
 * [Google Firebase](https://firebase.google.com/) - Serverless backend
 
+## Demo Videos
 
-## Developers
-
-* **Misra Turp** - *Cognitive Models* - [misraturp](https://github.com/misraturp)
-
-* **Kevin Hehn** - *Android Development* - [khehn](https://github.com/khehn)
-
-
+### App Usage - Demo Case
+[![App Usage](https://img.youtube.com/vi/LVnY0FYkQG0/0.jpg)](http://www.youtube.com/watch?v=LVnY0FYkQG0)
