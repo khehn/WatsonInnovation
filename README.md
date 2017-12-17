@@ -7,66 +7,21 @@ This will be mitigated in the future by conducting intensive application tests o
 ## Getting Started
 
 To test the developed app, one either needs Android Studio, in combination with and emulated virtual device or an physical Smartphone with enables USB debugging mode.
-
-### Starting the app
-
-A step by step series of examples that tell you have to get a development env running
-
-Say what the step will be
+After this is set up, one can just launch the app on either the emulated or physical device and test its behaviour.
 
 
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [IBM Watson](https://www.ibm.com/watson/) - Cognitive APIs
+* [IBM Data Science Experience](https://datascience.ibm.com/) - Building ML models
+* [Google Firebase](https://firebase.google.com/) - Serverless backend
 
-## Contributing
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+## Developers
 
-## Versioning
+* **Misra Turp** - *Technical Development* - [misraturp](https://github.com/misraturp)
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+* **Kevin Hehn** - *Technical Development* - [khehn](https://github.com/khehn)
 
-## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
