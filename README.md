@@ -1,34 +1,19 @@
-# Project Title
+# Watson Innovation - Group 6 - VU Amsterdam 
 
-One Paragraph of project description goes here
+This repository contains a prototypical implementation of a cognitive app, which was developed to tackle the issue of overcrowding in the city center of Amsterdam. 
+The prototype is an Android application which was tested using a Google Nexus 5X Smartphone in combination with Android 8.0.0. Using other Android versions or devices could lead to unintended behaviour of the app. 
+This will be mitigated in the future by conducting intensive application tests on different devices. 
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+To test the developed app, one either needs Android Studio, in combination with and emulated virtual device or an physical Smartphone with enables USB debugging mode.
 
-### Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
-
-### Installing
+### Starting the app
 
 A step by step series of examples that tell you have to get a development env running
 
 Say what the step will be
 
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
 
 End with an example of getting some data out of the system or using it for a little demo
 
