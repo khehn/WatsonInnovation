@@ -20,8 +20,8 @@ After this is set up, one can just launch the app on either the emulated or phys
 
 ## Developers
 
-* **Misra Turp** - *Technical Development* - [misraturp](https://github.com/misraturp)
+* **Misra Turp** - *Cognitive Models* - [misraturp](https://github.com/misraturp)
 
-* **Kevin Hehn** - *Technical Development* - [khehn](https://github.com/khehn)
+* **Kevin Hehn** - *Android Development* - [khehn](https://github.com/khehn)
 
 
