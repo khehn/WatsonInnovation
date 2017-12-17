@@ -9,8 +9,6 @@ This will be mitigated in the future by conducting intensive application tests o
 To test the developed app, one either needs Android Studio, in combination with and emulated virtual device or an physical Smartphone with enables USB debugging mode.
 After this is set up, one can just launch the app on either the emulated or physical device and test its behaviour.
 
-
-
 ## Built With
 
 * [IBM Watson](https://www.ibm.com/watson/) - Cognitive APIs
